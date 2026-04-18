@@ -1,5 +1,5 @@
 {
-  "name": "Auto Move Windows",
+  "name": "Auto Move Windows (Fork)",
   "description": "Move applications to specific workspaces when they create windows.",
   "original-authors": [
     "alessandro.crismani@gmail.com",

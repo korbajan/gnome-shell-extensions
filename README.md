@@ -11,6 +11,25 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 # GNOME Shell Extensions
 
+> **Fork note (korbajan):** This fork adds a **"Switch to workspace on open"** toggle to
+> the `auto-move-windows` extension — when enabled per rule, GNOME automatically switches
+> to the target workspace whenever the configured app opens a window.
+>
+> **Installing just `auto-move-windows` from this fork:**
+> ```bash
+> git clone https://github.com/korbajan/gnome-shell-extensions
+> cd gnome-shell-extensions
+> meson setup build --prefix="$HOME/.local"
+> meson install -C build --tags auto-move-windows 2>/dev/null || \
+>   meson install -C build   # installs all; only auto-move-windows is modified
+> gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell \
+>   --method org.gnome.Shell.Extensions.EnableExtension \
+>   "auto-move-windows@gnome-shell-extensions.gcampax.github.com"
+> ```
+> Pairs well with
+> [workspace-tiling-window-manager](https://github.com/korbajan/korba-gnome-shell-extensions):
+> auto-move sends apps to the right workspace, tiling arranges them automatically.
+
 GNOME Shell Extensions is a collection of extensions providing additional
 and optional functionality to GNOME Shell.
 
@@ -40,7 +59,7 @@ project.
      each application as soon as it creates a window.
 
  * drive-menu
- 
+
      Shows a status menu for rapid unmount and power off of external storage devices
   (i.e. pendrives)
 

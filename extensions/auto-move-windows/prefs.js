@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2012 Giovanni Campagna <gcampagna@src.gnome.org>
 // SPDX-FileCopyrightText: 2014 Florian Müllner <fmuellner@gnome.org>
+// SPDX-FileCopyrightText: 2026 korbajan <korbaczek.jan@gmail.com>
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
+// Modified by korbajan, 2026-04-18: added "switch to workspace when app opens" toggle per rule
 
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
@@ -50,6 +52,10 @@ class Rule extends GObject.Object {
             'workspace', null, null,
             GObject.ParamFlags.READWRITE,
             1, WORKSPACE_MAX, 1),
+        'focus': GObject.ParamSpec.boolean(
+            'focus', null, null,
+            GObject.ParamFlags.READWRITE,
+            false),
     };
 
     static {
@@ -106,10 +112,19 @@ class RulesList extends GObject.Object {
         this.#saveRules();
     }
 
+    changeFocus(id, focus) {
+        const pos = this.#rules.findIndex(r => r.appInfo.get_id() === id);
+        if (pos < 0)
+            return;
+
+        this.#rules[pos].set({focus});
+        this.#saveRules();
+    }
+
     #saveRules() {
         this.#settings.block_signal_handler(this.#changedId);
         this.#settings.set_strv(SETTINGS_KEY,
-            this.#rules.map(r => `${r.app_info.get_id()}:${r.workspace}`));
+            this.#rules.map(r => `${r.app_info.get_id()}:${r.workspace}:${r.focus}`));
         this.#settings.unblock_signal_handler(this.#changedId);
     }
 
@@ -118,10 +133,10 @@ class RulesList extends GObject.Object {
 
         this.#rules = [];
         for (const stringRule of this.#settings.get_strv(SETTINGS_KEY)) {
-            const [id, workspace] = stringRule.split(':');
+            const [id, workspace, focus] = stringRule.split(':');
             const appInfo = GioUnix.DesktopAppInfo.new(id);
             if (appInfo)
-                this.#rules.push(new Rule({appInfo, workspace}));
+                this.#rules.push(new Rule({appInfo, workspace, focus: focus === 'true'}));
             else
                 log(`Invalid ID ${id}`);
         }
@@ -150,6 +165,8 @@ class AutoMoveSettingsWidget extends Adw.PreferencesGroup {
             (self, name, param) => self._rules.remove(param.unpack()));
         this.install_action('rules.change-workspace', '(si)',
             (self, name, param) => self._rules.changeWorkspace(...param.deepUnpack()));
+        this.install_action('rules.change-focus', '(sb)',
+            (self, name, param) => self._rules.changeFocus(...param.deepUnpack()));
     }
 
     constructor(settings) {
@@ -278,6 +295,20 @@ class RuleRow extends Adw.ActionRow {
         wsButton.connect('notify::number', () => {
             this.activate_action('rules.change-workspace',
                 new GLib.Variant('(si)', [id, wsButton.number]));
+        });
+
+        const focusSwitch = new Gtk.Switch({
+            valign: Gtk.Align.CENTER,
+            tooltip_text: _('Switch to workspace when app opens'),
+        });
+        rule.bind_property('focus',
+            focusSwitch, 'active',
+            GObject.BindingFlags.SYNC_CREATE);
+        this.add_suffix(focusSwitch);
+
+        focusSwitch.connect('notify::active', () => {
+            this.activate_action('rules.change-focus',
+                new GLib.Variant('(sb)', [id, focusSwitch.active]));
         });
 
         const button = new Gtk.Button({

@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2017 Florian Müllner <fmuellner@gnome.org>>
+# SPDX-FileCopyrightText: 2026 korbajan <korbaczek.jan@gmail.com>
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
+# Modified by korbajan, 2026-04-18: changed uuid_suffix to korbajan.github.com
 
 project(
   'gnome-shell-extensions',
@@ -35,7 +37,7 @@ systemd_userunitdir = systemd_dep.get_variable(
 ver_arr = meson.project_version().split('.')
 shell_version = ver_arr[0]
 
-uuid_suffix = '@gnome-shell-extensions.gcampax.github.com'
+uuid_suffix = '@korbajan.github.com'
 
 classic_extensions = [
   'apps-menu',

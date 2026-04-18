@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: 2011 Giovanni Campagna <gcampagna@src.gnome.org>
 // SPDX-FileCopyrightText: 2011 Alessandro Crismani <alessandro.crismani@gmail.com>
 // SPDX-FileCopyrightText: 2014 Florian Müllner <fmuellner@gnome.org>
+// SPDX-FileCopyrightText: 2026 korbajan <korbaczek.jan@gmail.com>
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
+// Modified by korbajan, 2026-04-18: added "switch to workspace when app opens" toggle per rule
 
 import Shell from 'gi://Shell';
 
@@ -28,8 +30,11 @@ class WindowMover {
         this._appConfigs.clear();
 
         this._settings.get_strv('application-list').forEach(v => {
-            const [appId, num] = v.split(':');
-            this._appConfigs.set(appId, parseInt(num) - 1);
+            const [appId, num, focus] = v.split(':');
+            this._appConfigs.set(appId, {
+                workspace: parseInt(num) - 1,
+                focus: focus === 'true',
+            });
         });
 
         this._updateAppData();
@@ -91,10 +96,18 @@ class WindowMover {
             return !windows.includes(w) && w.get_compositor_private() !== null;
         }));
 
-        const workspaceNum = this._appConfigs.get(app.id);
-        windows.filter(w => !data.windows.includes(w)).forEach(window => {
+        const {workspace: workspaceNum, focus} = this._appConfigs.get(app.id);
+        const newWindows = windows.filter(w => !data.windows.includes(w));
+        newWindows.forEach(window => {
             this._moveWindow(window, workspaceNum);
         });
+
+        if (focus && newWindows.length > 0) {
+            const workspaceManager = global.workspace_manager;
+            const workspace = workspaceManager.get_workspace_by_index(workspaceNum);
+            workspace?.activate(global.get_current_time());
+        }
+
         data.windows = windows;
     }
 }
