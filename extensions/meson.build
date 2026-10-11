@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2017 Florian Müllner <fmuellner@gnome.org>
+# SPDX-FileCopyrightText: 2026 korbajan <korbaczek.jan@gmail.com>
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
+# Modified by korbajan, 2026-10-11: point metadata url at the fork
 
 extension_schemas = []
 js_sources = []
@@ -18,7 +20,7 @@ foreach e : enabled_extensions
   metadata_conf.set('version', meson.project_version())
   metadata_conf.set(
     'url',
-    'https://gitlab.gnome.org/GNOME/gnome-shell-extensions',
+    'https://github.com/korbajan/gnome-shell-extensions',
   )
 
   extension_sources = files(e + '/extension.js')
