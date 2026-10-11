@@ -19,12 +19,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 > ```bash
 > git clone https://github.com/korbajan/gnome-shell-extensions
 > cd gnome-shell-extensions
-> meson setup build --prefix="$HOME/.local"
-> meson install -C build --tags auto-move-windows 2>/dev/null || \
->   meson install -C build   # installs all; only auto-move-windows is modified
-> gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell \
->   --method org.gnome.Shell.Extensions.EnableExtension \
->   "auto-move-windows@gnome-shell-extensions.gcampax.github.com"
+> meson setup build --prefix="$HOME/.local" -Denable_extensions=auto-move-windows
+> meson install -C build
+> # log out and back in so GNOME Shell discovers the extension, then:
+> gnome-extensions enable auto-move-windows@korbajan.github.com
 > ```
 > Pairs well with
 > [workspace-tiling-window-manager](https://github.com/korbajan/korba-gnome-shell-extensions):
